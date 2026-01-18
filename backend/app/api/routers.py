@@ -1,47 +1,42 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.agent.kg_graph import kg_graph
-from app.db.neo4j_conn import driver  # 之前实现的数据库连接
+from app.services.kg_service import kg_service
 
 router = APIRouter()
 
 
-# 请求参数格式（前端传参）
+# 请求模型
 class ConceptRequest(BaseModel):
     concept: str
 
 
-# 核心接口：生成跨学科知识图谱
+# 核心接口：生成知识图谱
 @router.post("/api/kg/generate")
 async def generate_kg(request: ConceptRequest):
+    # 1. 仅保留基础校验（网关级过滤）
     concept = request.concept.strip()
+
+    # 空值校验
     if not concept:
-        raise HTTPException(status_code=400, detail="请输入核心概念")
+        raise HTTPException(status_code=400, detail="核心概念不能为空")
 
+    # 长度校验
+    if len(concept) > 20:
+        raise HTTPException(status_code=400, detail="核心概念长度不能超过20字")
+
+    # 2. 调用Agent生成图谱（输入有效性由Agent自主判断）
     try:
-        # 1. 运行LangGraph图（执行“解析→挖掘→校验”流程）
-        initial_state = {"concept": concept, "need_retry": False}
-        final_state = kg_graph.invoke(initial_state)  # 自动处理重试逻辑
+        final_graph = kg_service.run_agent(concept)
+        # 若Agent返回无效输入提示，直接返回400
+        if final_graph.get("code") == 400:
+            raise HTTPException(status_code=400, detail=final_graph["msg"])
 
-        # 2. 组装节点/边数据（供前端Echarts渲染）
-        nodes = [final_state["core_data"]] + final_state["valid_related"]
-        links = [
-            {
-                "source": final_state["core_data"]["id"],
-                "target": rel["id"],
-                "relation": rel["relation"],
-                "strength": rel["strength"]
-            } for rel in final_state["valid_related"]
-        ]
-
-        # 3. 存入Neo4j（复用之前的数据库逻辑，省略）
-        # ...
-
+        node_count = len(final_graph.get("nodes", []))
+        link_count = len(final_graph.get("links", []))
         return {
             "code": 200,
-            "data": {"nodes": nodes, "links": links},
-            "msg": f"成功生成{len(nodes) - 1}个跨学科关联概念"
+            "data": final_graph,
+            "msg": f"成功生成{node_count}个节点、{link_count}条合法关联"
         }
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"大模型调用失败：{str(e)}")
+        raise HTTPException(status_code=500, detail=f"生成失败：{str(e)}")
