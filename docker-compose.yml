@@ -25,17 +25,21 @@ services:
 
   # Neo4j图数据库服务
   neo4j:
-    image: neo4j:5.15-community  # 稳定版社区版
+    image: neo4j:5.15-community
     ports:
-      - "7474:7474"  # Neo4j浏览器访问端口
-      - "7687:7687"  # 后端连接的Bolt端口
+      - "7474:7474"
+      - "7687:7687"
     environment:
-      - NEO4J_AUTH=neo4j/12345678  # 密码改为8位（和后端一致）
-      - NEO4J_PLUGINS=["apoc"]  # 可选插件
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*  # 允许apoc插件
+      - NEO4J_AUTH=neo4j/12345678
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
     volumes:
-      - neo4j-data:/data  # 数据持久化
+      - neo4j-data:/data
     restart: always
+    # 新增：覆盖启动命令，解决进程冲突
+    command: [ "neo4j", "console" ]
+    # 可选：Windows 下添加特权模式，避免权限问题
+    privileged: true
 
 # 数据卷：持久化Neo4j数据
 volumes:
