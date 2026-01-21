@@ -28,6 +28,13 @@ def init_neo4j():
         print(f"Neo4j连接失败：{e}")
         driver = None
 
+def close_neo4j():
+    """关闭Neo4j连接"""
+    global driver
+    if driver:
+        driver.close()
+        driver = None
+        print("Neo4j连接已关闭")
 
 # 初始化连接
 init_neo4j()

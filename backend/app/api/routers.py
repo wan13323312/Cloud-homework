@@ -5,12 +5,33 @@ from app.services.kg_service import kg_service
 router = APIRouter()
 
 
-# 请求模型
 class ConceptRequest(BaseModel):
     concept: str
 
 
-# 核心接口：生成知识图谱
+# ========== 新增接口：仅查询数据库已有图谱 ==========
+@router.post("/api/kg/query-db")
+async def query_kg_from_db(request: ConceptRequest):
+    """仅查询数据库中已有的合法知识图谱（直接访问Neo4j，无LLM调用）"""
+    # 基础校验
+    concept = request.concept.strip()
+    if not concept:
+        raise HTTPException(status_code=400, detail="核心概念不能为空")
+    if len(concept) > 20:
+        raise HTTPException(status_code=400, detail="核心概念长度不能超过20字")
+
+    # 调用服务层的query_db方法（直接访问Neo4j）
+    try:
+        db_graph = kg_service.query_db(concept)
+        return {
+            "code": 200,
+            "data": db_graph,
+            "msg": db_graph["msg"],
+            "has_data": db_graph["has_data"]  # 前端判断关键
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"查询数据库失败：{str(e)}")
+
 @router.post("/api/kg/generate")
 async def generate_kg(request: ConceptRequest):
     # 1. 仅保留基础校验（网关级过滤）
