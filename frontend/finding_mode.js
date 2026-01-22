@@ -25,6 +25,10 @@ export function change_to_finding_mode(graph){
 
     const select1 = document.getElementById('node1');
     const select2 = document.getElementById('node2');
+
+    select1.innerHTML = '';
+    select2.innerHTML = '';
+
     const nodes = graph.getNodes();
     nodes.forEach(node => {
         const option1 = document.createElement('option');
