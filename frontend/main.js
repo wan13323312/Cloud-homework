@@ -6,7 +6,8 @@ const map_dict = {
     5: '#F44336'  // 红色（Material Red）
 };
 
-import{change_to_finding_mode,out_finding_mode,startFindPath} from './finding_mode.js'
+import{change_to_finding_mode,out_finding_mode,startFindPath} from './finding_mode.js';
+import{fetch_gen,fetch_quick_search} from "./fetch_method.js";
 
 let infinding = false;
 
@@ -80,7 +81,8 @@ function mergeGraphs(graph1, graph2) {
 
 
 function addnodes(graph) {
-    graph.on('node:dblclick', function (e) {
+    graph.on('node:dblclick', async function (e) {
+        /*
         let d = {
             "nodes": [
                 {"name": "信息熵", "domain": "计算机"},
@@ -101,7 +103,14 @@ function addnodes(graph) {
                 "relation": "吉布斯自由能（G）的定义式为 G = H - TS，其中T是温度，S是系统的熵。该公式明确地将能量（焓H）与无序度（熵S）结合起来，揭示了化学反应的自发性不仅取决于能量降低（焓减），也取决于熵增的驱动。",
                 "strength": 4
             }]
+        }*/
+        let concept = e.item.getModel().id;
+        let d = await fetch_quick_search(concept);
+        if(d.code > 200){
+            alert(d.detail);
+            return;
         }
+
         let data = preprocess(d);
         graph.setAutoPaint(false);
         mergeGraphs(graph, data);
@@ -270,6 +279,11 @@ function draw_main(input) {
 
     graph.on('edge:mouseenter', function (e) {
 
+        document.getElementById('edge_source').value = e.item.getModel().source;
+        document.getElementById('edge_target').value = e.item.getModel().target;
+        document.getElementById('relation').value = e.item.getModel().relation;
+        document.getElementById('strength').value = e.item.getModel().strength;
+
         if(infinding)
             return;
 
@@ -340,6 +354,8 @@ function draw_main(input) {
 }
 
 
+
+/*
 let pd = {
     "nodes": [
         {"name": "熵", "domain": "未知"},
@@ -401,19 +417,31 @@ let pd = {
     ],
     "cleaned_relations": []
 }
+*/
+
 
 document.addEventListener('DOMContentLoaded', () =>{
-    let graph = draw_main(pd);
-    document.getElementById('findbtn').addEventListener('click', ()=>startFindPath(graph));
-
-// 2. 为寻路模式复选框绑定状态切换逻辑
-    document.getElementById('findMode').addEventListener('change', function () {
-        if (this.checked) {
-            change_to_finding_mode(graph);      // 启用寻路模式
-            infinding = true;
-        } else {
-            out_finding_mode(graph);     // 退出寻路模式
-            infinding = false;
+    document.getElementById('searchbtn').addEventListener('click', async (e) => {
+        const concept = document.getElementById('search').value;
+        let resp = await fetch_gen(concept);
+        if(resp.code > 200){
+            alert(resp.detail);
+            return;
         }
-    });
+        let graph = draw_main(resp);
+
+        document.getElementById('findbtn').addEventListener('click', () => startFindPath(graph));
+
+        // 2. 为寻路模式复选框绑定状态切换逻辑
+        document.getElementById('findMode').addEventListener('change', function () {
+            if (this.checked) {
+                change_to_finding_mode(graph);      // 启用寻路模式
+                infinding = true;
+            } else {
+                out_finding_mode(graph);     // 退出寻路模式
+                infinding = false;
+            }
+        });
+
+    })
 });
