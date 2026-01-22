@@ -1,5 +1,5 @@
 export async function fetch_gen(concept) {
-    const res = await fetch('http://localhost:8080/api/kg/generate', {
+    const res = await fetch('http://localhost:8000/api/kg/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ concept })
@@ -9,7 +9,7 @@ export async function fetch_gen(concept) {
 }
 
 export async function fetch_quick_search(concept){
-    const res = await fetch('http://localhost:8080/api/kg/query-db', {
+    const res = await fetch('http://localhost:8000/api/kg/query-db', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ concept })
