@@ -12,8 +12,9 @@ import{fetch_gen,fetch_quick_search} from "./fetch_method.js";
 let infinding = false;
 
 
-function preprocess(data) {
-  for (let t of data['nodes']) {
+function preprocess(dt) {
+    let data = dt['data'];
+    for (let t of data['nodes']) {
     t['id'] = t['name'];
     t['label'] = t['name'];
   }
@@ -172,17 +173,24 @@ function draw_main(input) {
             default: ['drag-canvas','zoom-canvas'],
         },
         defaultNode: {
-            size: [20, 20],
+            size: 30,
+            //type:'rect',
             color: 'steelblue',
             style: {
                 lineWidth: 2,
                 fill: '#fff'
+            },
+            labelCfg: {
+                style: {
+                    fontSize: 8,          // 字体大
+                    fontWeight: 'normal'   // 可选：加粗等
+                }
             }
         },
 
         defaultEdge: {
             style: {
-                stroke: '#e2e2e2',// 线条颜色
+                stroke: '#e2e2e2',
                 lineWidth: 2
             }
         },
