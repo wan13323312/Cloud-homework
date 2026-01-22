@@ -106,6 +106,10 @@ function addnodes(graph) {
         }*/
         let concept = e.item.getModel().id;
         let d = await fetch_quick_search(concept);
+        if(d.code > 200){
+            alert(d.msg);
+            return;
+        }
 
         let data = preprocess(d);
         graph.setAutoPaint(false);
@@ -415,6 +419,10 @@ document.addEventListener('DOMContentLoaded', () =>{
     document.getElementById('searchbtn').addEventListener('click', async (e) => {
         const concept = document.getElementById('search').value;
         let resp = await fetch_gen(concept);
+        if(resp.code > 200){
+            alert(resp.msg);
+            return;
+        }
         let graph = draw_main(resp);
 
         document.getElementById('findbtn').addEventListener('click', () => startFindPath(graph));
