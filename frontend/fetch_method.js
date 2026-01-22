@@ -5,7 +5,8 @@ export async function fetch_gen(concept) {
         body: JSON.stringify({ concept })
     });
     const data = await res.json();
-    return data;
+    const result = data['data'];
+    return result;
 }
 
 export async function fetch_quick_search(concept){
@@ -15,5 +16,6 @@ export async function fetch_quick_search(concept){
         body: JSON.stringify({ concept })
     });
     const data = await res.json();
-    return data;
+    const result = data['data']
+    return result;
 }
