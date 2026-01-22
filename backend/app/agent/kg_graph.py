@@ -302,9 +302,8 @@ def save_relation_node(state: GraphState) -> GraphState:
     }
 
 
-# 8. 生成最终图谱节点（保留原有逻辑，如需仅显示新关联可注释旧关联逻辑）
 def generate_graph_node(state: GraphState) -> GraphState:
-    """节点6：生成最终图谱"""
+    """节点6：生成最终图谱（修复语法错误+限制总节点数≤5）"""
     concept = state["concept"]
     # 增加JSON解析容错
     try:
@@ -313,21 +312,18 @@ def generate_graph_node(state: GraphState) -> GraphState:
         db_result = {"status": "success", "data": {"source": concept, "related_nodes": []}}
 
     valid_relations = state["valid_relations"]
-    # 整合「清理后剩余的旧关联」+「新保存的关联」
-    nodes = [{
-        "name": concept,
-        "domain": "未知"
-    }]
-    links = []
+    # ========== 修复：定义all_nodes/core_node ==========
+    core_node = {"name": concept, "domain": "未知"}
+    all_nodes = [core_node]
+    all_links = []
 
-    # 加清理后剩余的旧关联
+    # 加清理后剩余的旧关联（可选：如需仅保留新关联，直接注释这段）
     if db_result["status"] == "success":
         for rel in db_result["data"]["related_nodes"]:
-            # 过滤已清理的关联
             is_cleaned = any([c["target"] == rel["target"] for c in state["cleaned_relations"]])
             if not is_cleaned and rel["strength"] >= 2:
-                nodes.append({"name": rel["target"], "domain": rel["domain"]})
-                links.append({
+                all_nodes.append({"name": rel["target"], "domain": rel["domain"]})
+                all_links.append({
                     "source": concept,
                     "target": rel["target"],
                     "relation": rel["relation"],
@@ -336,29 +332,41 @@ def generate_graph_node(state: GraphState) -> GraphState:
 
     # 加新关联
     for rel in valid_relations:
-        nodes.append({"name": rel["name"], "domain": rel["domain"]})
-        links.append({
+        all_nodes.append({"name": rel["name"], "domain": rel["domain"]})
+        all_links.append({
             "source": concept,
             "target": rel["name"],
             "relation": rel["relation"],
             "strength": rel["strength"]
         })
 
-    # 去重节点
-    nodes = [dict(t) for t in {tuple(d.items()) for d in nodes}]
+    # ========== 核心修改：限制总节点数≤5 ==========
+    # 去重
+    unique_nodes = [dict(t) for t in {tuple(d.items()) for d in all_nodes}]
+    # 保留核心节点 + 最多4个其他节点（总≤5）
+    filtered_nodes = [core_node]  # 必须保留核心节点
+    other_nodes = [n for n in unique_nodes if n["name"] != concept]
+    filtered_nodes.extend(other_nodes[:4])  # 核心+4个=5个
+
+    # 过滤链路（只保留筛选后节点之间的链路）
+    filtered_node_names = set(n["name"] for n in filtered_nodes)
+    filtered_links = [
+        link for link in all_links
+        if link["source"] in filtered_node_names
+           and link["target"] in filtered_node_names
+    ]
 
     # 记录推理过程
     reasoning = state["reasoning"]
-    reasoning.append(f"6. 生成图谱：共{len(nodes)}个节点，{len(links)}条合法关联")
+    reasoning.append(f"6. 生成图谱：共{len(filtered_nodes)}个节点，{len(filtered_links)}条合法关联（限制总节点数≤5）")
 
-    # 返回最终图谱
     return {
         **state,
         "final_graph": {
             "code": 200,
             "msg": "图谱生成成功",
-            "nodes": nodes,
-            "links": links,
+            "nodes": filtered_nodes,
+            "links": filtered_links,
             "reasoning": reasoning,
             "cleaned_relations": state["cleaned_relations"]
         },
@@ -381,7 +389,7 @@ def should_re_expand(state: GraphState) -> str:
     valid_count = len(state["valid_relations"])
 
     # 核心修改：合法关联≥5条 或 重试≥3次 → 停止扩展
-    if valid_count < 5 and retry_count < 3:
+    if valid_count < 5 and retry_count < 1:
         reasoning = state["reasoning"]
         reasoning.append(f"4. 校验后判定：合法关联数({valid_count})<5，第{retry_count + 1}次重试扩展")
         return "expand_relation"

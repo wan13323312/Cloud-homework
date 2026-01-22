@@ -197,6 +197,11 @@ def save_relation(relation_data: str) -> str:
     Returns:
         JSON字符串：存储结果
     """
+    driver = None
+    try:
+        driver = get_neo4j_driver()
+    except Exception as e:
+        print(f"❌ 重新初始化driver失败：{e}")
     if not driver:
         return json.dumps({"status": "error", "msg": "数据库未连接"})
 
@@ -257,6 +262,11 @@ def delete_relation(core_name: str, rel_name: str) -> str:
     Returns:
         JSON字符串：删除结果
     """
+    driver = None
+    try:
+        driver = get_neo4j_driver()
+    except Exception as e:
+        print(f"❌ 重新初始化driver失败：{e}")
     if not driver:
         return json.dumps({"status": "error", "msg": "数据库未连接"})
 
@@ -286,6 +296,11 @@ def update_relation(core_name: str, rel_name: str, new_relation: str, new_streng
     Returns:
         JSON字符串：更新结果
     """
+    driver = None
+    try:
+        driver = get_neo4j_driver()
+    except Exception as e:
+        print(f"❌ 重新初始化driver失败：{e}")
     if not driver:
         return json.dumps({"status": "error", "msg": "数据库未连接"})
 
@@ -324,6 +339,11 @@ def mark_abnormal(core_name: str, rel_name: str) -> str:
     Returns:
         JSON字符串：标记结果
     """
+    driver = None
+    try:
+        driver = get_neo4j_driver()
+    except Exception as e:
+        print(f"❌ 重新初始化driver失败：{e}")
     if not driver:
         return json.dumps({"status": "error", "msg": "数据库未连接"})
 

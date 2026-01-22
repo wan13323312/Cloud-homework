@@ -51,11 +51,25 @@ async def generate_kg(request: ConceptRequest):
         if final_graph.get("code") == 400:
             raise HTTPException(status_code=400, detail=final_graph["msg"])
 
-        node_count = len(final_graph.get("nodes", []))
-        link_count = len(final_graph.get("links", []))
+        # 提取final_graph中的核心字段（完全匹配期望格式）
+        nodes = final_graph.get("nodes", [])
+        links = final_graph.get("links", [])
+        reasoning = final_graph.get("reasoning", [])
+        cleaned_relations = final_graph.get("cleaned_relations", [])
+
+        # 统计节点/链路数量
+        node_count = len(nodes)
+        link_count = len(links)
+
+        # 3. 返回完全符合期望格式的结果
         return {
             "code": 200,
-            "data": final_graph,
+            "data": {
+                "nodes": nodes,
+                "links": links,
+                "reasoning": reasoning,
+                "cleaned_relations": cleaned_relations
+            },
             "msg": f"成功生成{node_count}个节点、{link_count}条合法关联"
         }
     except Exception as e:
