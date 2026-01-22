@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  # Neo4j图数据库服务
+  neo4j:
+    image: neo4j:5.15-community
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/12345678
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - neo4j-data:/data
+    restart: always
+    # 覆盖启动命令，解决进程冲突
+    command: [ "neo4j", "console" ]
+    # Windows 下添加特权模式，避免权限问题
+    privileged: true
   # 后端FastAPI服务
   backend:
     build: ./backend  # 指向Dockerfile所在目录
@@ -23,23 +40,6 @@ services:
       - ./backend:/app  # 挂载本地代码到容器
     working_dir: /app  # 容器内工作目录
 
-  # Neo4j图数据库服务
-  neo4j:
-    image: neo4j:5.15-community
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    environment:
-      - NEO4J_AUTH=neo4j/12345678
-      - NEO4J_PLUGINS=["apoc"]
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
-    volumes:
-      - neo4j-data:/data
-    restart: always
-    # 覆盖启动命令，解决进程冲突
-    command: [ "neo4j", "console" ]
-    # Windows 下添加特权模式，避免权限问题
-    privileged: true
 
 # 数据卷：持久化Neo4j数据
 volumes:

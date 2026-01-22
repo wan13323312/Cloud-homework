@@ -1,5 +1,5 @@
 from app.agent.kg_graph import kg_graph
-from app.db.neo4j_conn import driver
+from app.db.neo4j_conn import driver, init_neo4j, get_neo4j_driver
 import json
 
 
@@ -44,11 +44,11 @@ class KnowledgeGraphService:
         print(concept_stripped)
         if len(concept_stripped) > 20:
             raise Exception("核心概念长度不能超过20字")
-
-        # 2. 校验驱动是否初始化（确保抛出异常）
-        global driver  # 显式引用全局驱动
-        if driver is None:
-            raise Exception("Neo4j数据库驱动未初始化，请检查配置")
+        driver = None
+        try:
+            driver = get_neo4j_driver()
+        except Exception as e:
+            print(f"❌ 重新初始化driver失败：{e}")
 
         # 3. 执行Neo4j查询
         try:

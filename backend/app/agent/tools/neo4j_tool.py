@@ -1,5 +1,5 @@
 from langchain_core.tools import tool
-from app.db.neo4j_conn import driver
+from app.db.neo4j_conn import get_neo4j_driver
 import json
 from datetime import datetime
 import uuid
@@ -82,6 +82,11 @@ def query_db(concept: str) -> str:
     Returns:
         JSON字符串：包含源概念、已有关联节点列表（名称、领域、关系、强度）
     """
+    driver = None
+    try:
+        driver = get_neo4j_driver()
+    except Exception as e:
+        print(f"❌ 重新初始化driver失败：{e}")
     if not driver:
         return json.dumps({"status": "error", "msg": "数据库未连接"})
 

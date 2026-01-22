@@ -2,9 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routers import router as kg_router
 import uvicorn
+from app.db.neo4j_conn import init_neo4j, driver
+
+# ========== 核心修改：直接初始化（模块加载时执行，全局生效） ==========
+print("🔍 开始初始化Neo4j驱动...")
+try:
+    init_neo4j()
+    print("✅ Neo4j驱动初始化完成（main.py全局初始化）")
+except Exception as e:
+    print(f"❌ Neo4j驱动初始化失败：{e}")
+    raise  # 初始化失败则服务启动失败
 
 # 初始化FastAPI
 app = FastAPI(title="跨学科知识图谱智能体", version="1.0")
+
 
 # 跨域配置
 app.add_middleware(
