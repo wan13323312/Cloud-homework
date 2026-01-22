@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # 后端FastAPI服务
   backend:
-    build: ./backend  # 指向你的Dockerfile所在目录
+    build: ./backend  # 指向Dockerfile所在目录
     ports:
       - "8000:8000"  # 前端访问后端的端口
     # 合并所有环境变量到一个environment字段（解决重复定义问题）
@@ -36,9 +36,9 @@ services:
     volumes:
       - neo4j-data:/data
     restart: always
-    # 新增：覆盖启动命令，解决进程冲突
+    # 覆盖启动命令，解决进程冲突
     command: [ "neo4j", "console" ]
-    # 可选：Windows 下添加特权模式，避免权限问题
+    # Windows 下添加特权模式，避免权限问题
     privileged: true
 
 # 数据卷：持久化Neo4j数据

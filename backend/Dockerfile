@@ -4,17 +4,13 @@ FROM python:3.10-slim
 # 设置工作目录
 WORKDIR /app
 
-# 关键修复：
-# 1. 清空原有源文件（避免和新源冲突）
-# 2. 只添加清华的trixie主仓库（去掉不存在的security仓库）
-# 3. 禁用APT安全更新检查（临时规避404）
 RUN echo "" > /etc/apt/sources.list && \
     echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ trixie main contrib non-free non-free-firmware" > /etc/apt/sources.list && \
     echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ trixie-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
     echo "Acquire::Check-Valid-Until \"false\";" > /etc/apt/apt.conf.d/99no-check-valid-until && \
     apt-get clean
 
-# 安装系统依赖（仅保留gcc，跳过不必要的依赖）
+# 安装系统依赖
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc --fix-missing && \
     rm -rf /var/lib/apt/lists/*

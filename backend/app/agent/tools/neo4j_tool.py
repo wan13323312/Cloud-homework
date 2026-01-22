@@ -13,15 +13,10 @@ def generate_uuid() -> str:
 import json
 import re
 from langchain_core.tools import tool
-# 确保导入你的LLM配置（和其他工具保持一致）
+# 确保导入LLM配置
 from app.agent.llm_config import get_llm
 from langchain_core.prompts import ChatPromptTemplate
 
-
-# 补充数据库驱动（如果和其他工具在同一文件，可复用已有driver）
-# 如果是单独文件，需添加：
-# from neo4j import GraphDatabase
-# driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
 @tool
 def validate_concept(concept: str) -> str:
@@ -42,7 +37,7 @@ def validate_concept(concept: str) -> str:
 
     # 步骤2：Agent（LLM）语义校验（核心逻辑）
     try:
-        llm = get_llm()  # 复用已有LLM配置，和其他工具保持一致
+        llm = get_llm()
         prompt = ChatPromptTemplate.from_template("""
         你是知识图谱概念有效性校验专家，基于以下规则判断概念是否有效：
         1. 有效概念：具体的、有科学/学科意义的概念（如"熵"、"神经网络"、"最小二乘法"）；
@@ -60,7 +55,7 @@ def validate_concept(concept: str) -> str:
         response = chain.invoke({
             "concept": concept
         })
-        # 直接返回LLM生成的JSON（和validate_relation工具逻辑一致）
+        # 直接返回LLM生成的JSON
         return response.content.strip()
 
     # 步骤3：LLM调用失败时的兜底校验（保证工具鲁棒性）
@@ -72,7 +67,7 @@ def validate_concept(concept: str) -> str:
                 "valid": False,
                 "reason": f"无意义词汇，仅支持具体的学科概念（如“熵”“神经网络”）"
             })
-        # 兜底判定为有效（避免工具异常导致流程中断）
+        # 兜底判定为有效
         return json.dumps({
             "valid": True,
             "reason": f"概念有效（LLM校验异常兜底判断，错误：{str(e)[:20]}）"

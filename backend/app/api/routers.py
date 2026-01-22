@@ -9,7 +9,6 @@ class ConceptRequest(BaseModel):
     concept: str
 
 
-# ========== 新增接口：仅查询数据库已有图谱 ==========
 @router.post("/api/kg/query-db")
 async def query_kg_from_db(request: ConceptRequest):
     """仅查询数据库中已有的合法知识图谱（直接访问Neo4j，无LLM调用）"""
@@ -34,7 +33,7 @@ async def query_kg_from_db(request: ConceptRequest):
 
 @router.post("/api/kg/generate")
 async def generate_kg(request: ConceptRequest):
-    # 1. 仅保留基础校验（网关级过滤）
+    # 1. 仅保留基础校验
     concept = request.concept.strip()
 
     # 空值校验

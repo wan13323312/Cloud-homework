@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 
 
-# 1. 定义状态（新增输入校验+重试次数字段）
+# 1. 定义状态
 class GraphState(TypedDict):
     concept: str  # 核心概念
     input_valid: bool  # 输入是否有效
@@ -17,7 +17,7 @@ class GraphState(TypedDict):
     cleaned_relations: List[Dict]  # 清理的不合理关联（旧关联）
     final_graph: Dict  # 最终图谱
     reasoning: List[str]  # 推理过程（分步记录）
-    expand_retry_count: int  # 新增：扩展重试次数（解决递归核心）
+    expand_retry_count: int  # 扩展重试次数（解决递归核心）
 
 
 # 2. 输入校验节点（保留原有逻辑）
@@ -31,12 +31,9 @@ def validate_input_node(state: GraphState) -> GraphState:
     reasoning.append("0. 输入校验：开始调用validate_concept工具判断概念有效性")
 
     try:
-        # ========== 核心：调用validate_concept工具 ==========
-        # 和query_db/expand_relation工具的调用方式完全一致
         tool_result_str = validate_concept.invoke({"concept": concept})
         tool_result = json.loads(tool_result_str)
 
-        # ========== 处理工具返回结果 ==========
         if not tool_result["valid"]:
             error_msg = f"概念「{concept}」无效：{tool_result['reason']}"
             reasoning.append(f"0. 输入校验失败：{error_msg}")
@@ -142,7 +139,7 @@ def query_db_node(state: GraphState) -> GraphState:
     }
 
 
-# 4. 清理旧关联节点（保留原有逻辑）
+# 4. 清理旧关联节点
 def clean_invalid_relation_node(state: GraphState) -> GraphState:
     """节点2：清理数据库中已有的不合理关联"""
     from .tools.neo4j_tool import validate_relation, delete_relation, mark_abnormal
@@ -323,7 +320,6 @@ def generate_graph_node(state: GraphState) -> GraphState:
     }]
     links = []
 
-    # ========== 可选：如需仅显示新关联，注释以下旧关联逻辑 ==========
     # 加清理后剩余的旧关联
     if db_result["status"] == "success":
         for rel in db_result["data"]["related_nodes"]:
