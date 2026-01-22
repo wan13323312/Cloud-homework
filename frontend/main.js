@@ -107,7 +107,7 @@ function addnodes(graph) {
         let concept = e.item.getModel().id;
         let d = await fetch_quick_search(concept);
         if(d.code > 200){
-            alert(d.msg);
+            alert(d.detail);
             return;
         }
 
@@ -279,6 +279,11 @@ function draw_main(input) {
 
     graph.on('edge:mouseenter', function (e) {
 
+        document.getElementById('edge_source').value = e.item.getModel().source;
+        document.getElementById('edge_target').value = e.item.getModel().target;
+        document.getElementById('relation').value = e.item.getModel().relation;
+        document.getElementById('strength').value = e.item.getModel().strength;
+
         if(infinding)
             return;
 
@@ -420,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () =>{
         const concept = document.getElementById('search').value;
         let resp = await fetch_gen(concept);
         if(resp.code > 200){
-            alert(resp.msg);
+            alert(resp.detail);
             return;
         }
         let graph = draw_main(resp);

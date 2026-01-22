@@ -8,7 +8,7 @@
         html, body { overflow: hidden; margin: 0; }
 
         .controls {
-            position: absolute;
+            //position: absolute;
             top: 10px;
             left: 10px;
             z-index: 100;
@@ -66,6 +66,9 @@
     </style>
 </head>
 <body>
+
+<span>
+
 <div class="controls">
     <div class="control-group">
         <label for="search">搜索:</label>
@@ -92,6 +95,30 @@
         <button id="findbtn">开始寻路</button>
     </div>
 </div>
+
+<div id="edge_info">
+<div class="form-group">
+    <label for="edge_source">来源：</label>
+    <input type="text" id="edge_source">
+</div>
+<div class="form-group">
+    <label for="edge_target">去向：</label>
+    <input type="text" id="edge_target">
+</div>
+
+<div class="form-group">
+<label for="strength">强度：</label>
+<input type="text" id="strength">
+</div>
+
+<div class="form-group">
+    <label for="relation">关联：</label>
+     <textarea id="relation" name="relation" rows="5" cols="50"></textarea>
+</div>
+</div>
+
+</span>
+
 <div id="mountNode"></div>
 
 <script src="https://gw.alipayobjects.com/os/lib/antv/g6/4.3.11/dist/g6.min.js"></script>
