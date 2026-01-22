@@ -13,6 +13,7 @@
       padding: 10px;
       height: 100vh;
       box-sizing: border-box;
+      flex-direction: column;
     }
 
     .controls {
@@ -102,9 +103,14 @@
       border: 1px solid #ccc;
       flex-shrink: 1;
     }
+
+    .big_container{
+      display: flex;
+    }
   </style>
 </head>
 <body>
+<div class="big_container" >
 <div class="container">
   <div class="controls">
     <div class="control-group">
@@ -152,9 +158,10 @@
     </div>
   </div>
 
-  <div id="mountNode"></div>
-</div>
 
+</div>
+<div id="mountNode"></div>
+</div>
 <script src="https://gw.alipayobjects.com/os/lib/antv/g6/4.3.11/dist/g6.min.js"></script>
 <script type="module" src="./main.js"></script>
 </body>
