@@ -26,21 +26,7 @@ export function change_to_finding_mode(graph){
     const select1 = document.getElementById('node1');
     const select2 = document.getElementById('node2');
 
-    select1.innerHTML = '';
-    select2.innerHTML = '';
 
-    const nodes = graph.getNodes();
-    nodes.forEach(node => {
-        const option1 = document.createElement('option');
-        option1.value = node.getModel().id;
-        option1.textContent = node.getModel().id;
-        select1.appendChild(option1);
-
-        const option2 = document.createElement('option');
-        option2.value = node.getModel().id;
-        option2.textContent = node.getModel().id;
-        select2.appendChild(option2);
-    });
 }
 
 export function out_finding_mode(graph){

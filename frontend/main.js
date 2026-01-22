@@ -81,6 +81,35 @@ function mergeGraphs(graph1, graph2) {
 }
 
 
+function update_graph(graph){
+    const edges = graph.getEdges();
+    // 遍历并更新每条边的颜色
+    edges.forEach(edge => {
+        graph.updateItem(edge, {
+            style: {
+                stroke: map_dict[edge.getModel().strength],        // 新颜色
+            }
+        });
+    });
+
+    select1.innerHTML = '';
+    select2.innerHTML = '';
+
+    const nodes = graph.getNodes();
+    nodes.forEach(node => {
+        const option1 = document.createElement('option');
+        option1.value = node.getModel().id;
+        option1.textContent = node.getModel().id;
+        select1.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = node.getModel().id;
+        option2.textContent = node.getModel().id;
+        select2.appendChild(option2);
+    });
+}
+
+
 function addnodes(graph) {
     graph.on('node:dblclick', async function (e) {
         /*
@@ -107,7 +136,7 @@ function addnodes(graph) {
         }*/
         let concept = e.item.getModel().id;
         let d = await fetch_quick_search(concept);
-        if(d.code > 200){
+        if (d.code > 200) {
             alert(d.detail);
             return;
         }
@@ -117,16 +146,7 @@ function addnodes(graph) {
         mergeGraphs(graph, data);
         graph.setAutoPaint(true);
         graph.layout();
-
-        const edges = graph.getEdges();
-        // 遍历并更新每条边的颜色
-        edges.forEach(edge => {
-            graph.updateItem(edge, {
-                style: {
-                    stroke: map_dict[edge.getModel().strength],        // 新颜色
-                }
-            });
-        });
+        update_graph(graph);
     });
 }
 
@@ -346,16 +366,7 @@ function draw_main(input) {
     graph.render();
 
 
-    const edges = graph.getEdges();
-    // 遍历并更新每条边的颜色
-    edges.forEach(edge => {
-        graph.updateItem(edge, {
-            style: {
-                stroke: map_dict[edge.getModel().strength],        // 新颜色
-            }
-        });
-    });
-
+    update_graph(graph);
 
 
     return graph;
